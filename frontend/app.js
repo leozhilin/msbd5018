@@ -5,8 +5,8 @@ let CONFIG = {
     CHAIN_ID: 1337,
     
     // 合约地址（会自动从部署信息文件读取）
-    HKDT_ADDRESS: '',
-    PAYMENT_GATEWAY_ADDRESS: '',
+    HKDT_ADDRESS: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+    PAYMENT_GATEWAY_ADDRESS: '0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512',
     
     // HKDT ABI（简化版，只包含必要函数）
     HKDT_ABI: [

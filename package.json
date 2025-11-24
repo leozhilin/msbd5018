@@ -13,7 +13,8 @@
     "interact": "npx hardhat run scripts/interact.js --network localhost",
     "merchant": "node scripts/merchant-listener.js",
     "mint": "node scripts/mint-to-address.js",
-    "console": "npx hardhat console --network localhost"
+    "console": "npx hardhat console --network localhost",
+    "reserve:compare": "node scripts/reserve-comparison.js"
   },
   "keywords": [
     "stablecoin",
