@@ -1,0 +1,35 @@
+{
+  "name": "hkdt-stablecoin",
+  "version": "1.0.0",
+  "description": "HKDT - HongKong Dollar Token Stablecoin Project",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy:local": "npx hardhat run scripts/deploy.js --network localhost",
+    "deploy:gateway": "npx hardhat run scripts/deploy-payment-gateway.js --network localhost",
+    "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
+    "node": "npx hardhat node",
+    "interact": "npx hardhat run scripts/interact.js --network localhost",
+    "merchant": "node scripts/merchant-listener.js",
+    "mint": "node scripts/mint-to-address.js",
+    "console": "npx hardhat console --network localhost"
+  },
+  "keywords": [
+    "stablecoin",
+    "HKDT",
+    "ERC20",
+    "blockchain"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "chai": "^4.3.10",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.9.0",
+    "hardhat": "^2.19.0"
+  }
+}
+
