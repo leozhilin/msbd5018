@@ -123,8 +123,8 @@ async function initApp() {
         return;
     }
     
-    // 创建provider（连接到本地网络）
-    provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URL);
+    // 创建provider（连接到本地网络，ethers v6 写法）
+    provider = new ethers.JsonRpcProvider(CONFIG.RPC_URL);
     
     // 检查是否已连接
     try {
@@ -185,7 +185,7 @@ async function connectWallet() {
         try {
             await window.ethereum.request({
                 method: 'wallet_switchEthereumChain',
-                params: [{ chainId: ethers.utils.hexValue(CONFIG.CHAIN_ID) }]
+                params: [{ chainId: ethers.toBeHex(CONFIG.CHAIN_ID) }]
             });
         } catch (switchError) {
             // 如果网络不存在，添加网络
@@ -193,7 +193,7 @@ async function connectWallet() {
                 await window.ethereum.request({
                     method: 'wallet_addEthereumChain',
                     params: [{
-                        chainId: ethers.utils.hexValue(CONFIG.CHAIN_ID),
+                        chainId: ethers.toBeHex(CONFIG.CHAIN_ID),
                         chainName: 'Hardhat Local',
                         nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
                         rpcUrls: [CONFIG.RPC_URL]
@@ -202,9 +202,9 @@ async function connectWallet() {
             }
         }
         
-        // 创建signer
-        const web3Provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = web3Provider.getSigner();
+        // 创建signer（ethers v6：BrowserProvider）
+        const web3Provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await web3Provider.getSigner();
         userAddress = await signer.getAddress();
         
         // 初始化合约
@@ -264,7 +264,7 @@ async function updateBalance() {
     
     try {
         const balance = await hkdtContract.balanceOf(userAddress);
-        const balanceFormatted = ethers.utils.formatEther(balance);
+        const balanceFormatted = ethers.formatEther(balance);
         document.getElementById('hkdtBalance').textContent = 
             parseFloat(balanceFormatted).toFixed(2) + ' HKDT';
     } catch (error) {
@@ -290,7 +290,7 @@ async function payOrder() {
         return;
     }
     
-    if (!merchantAddress || !ethers.utils.isAddress(merchantAddress)) {
+    if (!merchantAddress || !ethers.isAddress(merchantAddress)) {
         showAlert('请输入有效的商户地址', 'error');
         return;
     }
@@ -304,12 +304,12 @@ async function payOrder() {
         showAlert('正在处理支付...', 'info');
         document.getElementById('payBtn').disabled = true;
         
-        // 转换金额为wei
-        const amountWei = ethers.utils.parseEther(amount);
+        // 转换金额为wei（ethers v6）
+        const amountWei = ethers.parseEther(amount);
         
-        // 检查余额
+        // 检查余额（ethers v6 返回 bigint，直接用比较运算符）
         const balance = await hkdtContract.balanceOf(userAddress);
-        if (balance.lt(amountWei)) {
+        if (balance < amountWei) {
             showAlert('HKDT余额不足', 'error');
             document.getElementById('payBtn').disabled = false;
             return;
@@ -317,12 +317,12 @@ async function payOrder() {
         
         // 如果有PaymentGateway，使用它；否则直接转账
         if (paymentGatewayContract) {
-            // 检查并授权PaymentGateway使用HKDT
+            // 检查并授权PaymentGateway使用HKDT（ethers v6：allowance 也是 bigint）
             const allowance = await hkdtContract.allowance(userAddress, CONFIG.PAYMENT_GATEWAY_ADDRESS);
-            if (allowance.lt(amountWei)) {
+            if (allowance < amountWei) {
                 showAlert('正在授权PaymentGateway使用HKDT...', 'info');
                 // 授权一个较大的数量（例如10000 HKDT），避免每次都要授权
-                const approveAmount = ethers.utils.parseEther("10000");
+                const approveAmount = ethers.parseEther("10000");
                 const approveTx = await hkdtContract.approve(CONFIG.PAYMENT_GATEWAY_ADDRESS, approveAmount);
                 await approveTx.wait();
                 showAlert('授权成功，正在支付...', 'success');

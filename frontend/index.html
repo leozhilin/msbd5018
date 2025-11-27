@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HKDT 支付演示</title>
+    <title>HKDT 支付 & 仪表盘</title>
     <style>
         * {
             margin: 0;
@@ -13,257 +13,561 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at top left, #1f2937 0, #020617 45%, #020617 100%);
+            color: #e5e7eb;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
         }
-        
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            max-width: 500px;
-            width: 100%;
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px 16px 40px;
         }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-        
-        .section-title {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-        
-        .info-item {
+
+        .header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #e0e0e0;
+            align-items: center;
+            margin-bottom: 24px;
         }
-        
-        .info-item:last-child {
-            border-bottom: none;
+
+        .title-group h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #f9fafb;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        
-        .label {
-            color: #666;
-            font-weight: 500;
-        }
-        
-        .value {
-            color: #333;
-            font-family: 'Courier New', monospace;
+
+        .title-badge {
             font-size: 12px;
-            word-break: break-all;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(56, 189, 248, 0.15);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.4);
         }
-        
-        .status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
+
+        .subtitle {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #9ca3af;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .nav-link {
+            color: #e5e7eb;
+            text-decoration: none;
+            font-size: 13px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            transition: all 0.15s ease-out;
+        }
+
+        .nav-link:hover {
+            border-color: #38bdf8;
+            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.25);
+        }
+
+        .feature-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .feature-card {
+            border-radius: 16px;
+            padding: 12px 12px 10px;
+            background: radial-gradient(circle at top left, rgba(15,23,42,0.98), rgba(15,23,42,0.96));
+            border: 1px solid rgba(31,41,55,0.95);
+            box-shadow: 0 12px 40px rgba(15,23,42,0.9);
             font-size: 12px;
+        }
+
+        .feature-title {
+            font-size: 13px;
             font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .status.connected {
-            background: #d4edda;
-            color: #155724;
+
+        .feature-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 999px;
+            background: rgba(56,189,248,0.18);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
         }
-        
-        .status.disconnected {
-            background: #f8d7da;
-            color: #721c24;
+
+        .feature-desc {
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.5;
         }
-        
-        button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
+
+        .layout {
+            display: grid;
+            grid-template-columns: 3fr 2.2fr;
+            gap: 18px;
+        }
+
+        .panel {
+            background: radial-gradient(circle at top left, rgba(248, 250, 252, 0.08), rgba(15, 23, 42, 0.98));
+            border-radius: 20px;
+            border: 1px solid rgba(55, 65, 81, 0.85);
+            padding: 18px 16px 16px;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.09), transparent 60%);
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .panel-title {
             font-size: 16px;
             font-weight: 600;
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .panel-desc {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 2px;
+        }
+
+        .tag {
+            font-size: 11px;
+            border-radius: 999px;
+            padding: 3px 9px;
+            border: 1px solid rgba(55, 65, 81, 0.85);
+            color: #9ca3af;
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .block {
+            margin-bottom: 14px;
+            padding: 12px 12px 10px;
+            border-radius: 14px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .block-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin-bottom: 8px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .value {
+            font-size: 12px;
+            color: #e5e7eb;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: #f97316;
+        }
+
+        .status.connected .status-dot {
+            background: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
+        }
+
+        .status.disconnected .status-dot {
+            background: #f97373;
+            box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.3);
+        }
+
+        .button {
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.96);
+            color: #e5e7eb;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-bottom: 10px;
+            transition: all 0.15s ease-out;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+
+        .button:hover:not(:disabled) {
+            border-color: #38bdf8;
+            background: rgba(15, 23, 42, 1);
+            box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+            transform: translateY(-1px);
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        
-        .btn-primary:disabled {
-            background: #ccc;
+
+        .button:disabled {
+            opacity: 0.45;
             cursor: not-allowed;
-            transform: none;
+            box-shadow: none;
         }
-        
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
+
+        .button-primary {
+            background: linear-gradient(135deg, #0ea5e9, #22c55e);
+            border-color: #22c55e;
+            color: #f9fafb;
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.35);
         }
-        
-        .btn-secondary:hover {
-            background: #5a6268;
+
+        .button-primary:hover:not(:disabled) {
+            box-shadow: 0 14px 36px rgba(34, 197, 94, 0.45);
         }
-        
+
         input {
             width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 15px;
-            transition: border-color 0.3s;
+            padding: 10px 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: rgba(15, 23, 42, 0.96);
+            color: #e5e7eb;
+            font-size: 13px;
+            margin-bottom: 10px;
         }
-        
+
+        input::placeholder {
+            color: #6b7280;
+        }
+
         input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5);
         }
-        
+
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+            margin-bottom: 10px;
         }
-        
+
         .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+            background: rgba(22, 163, 74, 0.15);
+            color: #bbf7d0;
+            border: 1px solid rgba(22, 163, 74, 0.6);
         }
-        
+
         .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+            background: rgba(248, 113, 113, 0.12);
+            color: #fecaca;
+            border: 1px solid rgba(248, 113, 113, 0.6);
         }
-        
+
         .alert-info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
+            background: rgba(56, 189, 248, 0.12);
+            color: #bae6fd;
+            border: 1px solid rgba(56, 189, 248, 0.6);
         }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .loading {
+
+        .order-list-empty {
+            color: #6b7280;
             text-align: center;
-            padding: 20px;
-            color: #666;
+            padding: 18px 8px;
+            font-size: 12px;
+        }
+
+        .order-list-item {
+            padding: 10px 10px;
+            border-radius: 10px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+
+        .order-list-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .order-id {
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        .order-status {
+            font-size: 11px;
+            color: #4ade80;
+        }
+
+        .order-meta {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .pill-small {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 7px;
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.96);
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        .highlight {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .controls {
+                justify-content: flex-start;
+            }
+
+            .feature-strip {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🪙 HKDT 支付演示</h1>
-        <p class="subtitle">使用 MetaMask 钱包进行支付</p>
-        
-        <!-- 连接状态 -->
-        <div class="section">
-            <div class="section-title">连接状态</div>
-            <div class="info-item">
-                <span class="label">钱包状态：</span>
-                <span class="status disconnected" id="walletStatus">未连接</span>
+    <div class="page">
+        <header class="header">
+            <div class="title-group">
+                <h1>
+                    🪙 HKDT 支付与分析中心
+                    <span class="title-badge">Demo Environment</span>
+                </h1>
+                <p class="subtitle">在同一入口下完成 HKDT 支付交易和链上数据分析。</p>
             </div>
-            <div class="info-item">
-                <span class="label">账户地址：</span>
-                <span class="value" id="accountAddress">-</span>
+            <div class="controls">
+                <a href="dashboard.html" class="nav-link">📊 打开交易仪表盘</a>
             </div>
-            <div class="info-item">
-                <span class="label">HKDT余额：</span>
-                <span class="value" id="hkdtBalance">-</span>
-            </div>
-            <button class="btn-primary" id="connectBtn" onclick="connectWallet()">连接钱包</button>
-        </div>
-        
-        <!-- 支付表单 -->
-        <div class="section">
-            <div class="section-title">支付订单</div>
-            <div id="alertContainer"></div>
-            <input type="text" id="orderId" placeholder="订单ID（例如：ORDER-001）" value="ORDER-001">
-            <input type="text" id="merchantAddress" placeholder="商户地址" value="">
-            <input type="number" id="amount" placeholder="支付金额（HKDT）" value="10" step="0.1" min="0.1">
-            <button class="btn-primary" id="payBtn" onclick="payOrder()" disabled>支付 HKDT</button>
-        </div>
-        
-        <!-- 订单信息 -->
-        <div class="section">
-            <div class="section-title">最近订单</div>
-            <div id="orderList">
-                <p style="color: #999; text-align: center; padding: 20px;">暂无订单</p>
-            </div>
-        </div>
+        </header>
+
+        <!-- 顶部功能概览条，类似主流产品站的高亮 feature 区 -->
+        <section class="feature-strip">
+            <article class="feature-card">
+                <div class="feature-title">
+                    <span class="feature-icon">💳</span>
+                    <span>一键发起 HKDT 支付</span>
+                </div>
+                <p class="feature-desc">
+                    连接本地 MetaMask 账户，填写订单 ID 和商户地址，即可模拟完整的稳定币支付流程。
+                </p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-title">
+                    <span class="feature-icon">📈</span>
+                    <span>可视化交易仪表盘</span>
+                </div>
+                <p class="feature-desc">
+                    基于本地 Hardhat 区块链事件，自动聚合 HKDT 铸币、赎回和支付数据，并以图表形式呈现。
+                </p>
+            </article>
+            <article class="feature-card">
+                <div class="feature-title">
+                    <span class="feature-icon">🧪</span>
+                    <span>专为教学与实验设计</span>
+                </div>
+                <p class="feature-desc">
+                    所有交互都运行在本地测试链上，支持快速重置环境，非常适合课堂演示与安全实验。
+                </p>
+            </article>
+        </section>
+
+        <main class="layout">
+            <!-- 左侧：支付入口 -->
+            <section class="panel">
+                <header class="panel-header">
+                    <div>
+                        <h2 class="panel-title">HKDT 支付交易</h2>
+                        <p class="panel-desc">
+                            连接 MetaMask 本地账户，发起 HKDT 支付订单，体验从钱包到合约的完整流程。
+                        </p>
+                    </div>
+                    <span class="tag">交易入口</span>
+                </header>
+
+                <div class="block">
+                    <div class="block-title">连接状态</div>
+                    <div class="info-row">
+                        <span class="label">钱包状态</span>
+                        <span class="status disconnected" id="walletStatus">
+                            <span class="status-dot"></span>
+                            <span>未连接</span>
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">账户地址</span>
+                        <span class="value" id="accountAddress">-</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">HKDT 余额</span>
+                        <span class="value" id="hkdtBalance">-</span>
+                    </div>
+                    <button class="button button-primary" id="connectBtn" onclick="connectWallet()">连接钱包并刷新状态</button>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">支付订单</div>
+                    <div id="alertContainer"></div>
+                    <input type="text" id="orderId" placeholder="订单 ID（例如：ORDER-001）" value="ORDER-001">
+                    <input type="text" id="merchantAddress" placeholder="商户地址（0x...）" value="">
+                    <input type="number" id="amount" placeholder="支付金额（HKDT）" value="10" step="0.1" min="0.1">
+                    <button class="button button-primary" id="payBtn" onclick="payOrder()" disabled>支付 HKDT</button>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">最近订单</div>
+                    <div id="orderList">
+                        <p class="order-list-empty">暂无订单，发起一笔支付后，这里会展示最新记录。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 右侧：仪表盘入口 -->
+            <section class="panel">
+                <header class="panel-header">
+                    <div>
+                        <h2 class="panel-title">HKDT 交易仪表盘</h2>
+                        <p class="panel-desc">
+                            查看 HKDT 在本地链上的交易事件：铸币、赎回、转账与支付，并进行可视化分析。
+                        </p>
+                    </div>
+                    <span class="tag">数据分析</span>
+                </header>
+
+                <div class="block">
+                    <div class="block-title">功能概览</div>
+                    <div style="font-size: 12px; color: #9ca3af; line-height: 1.6;">
+                        <div class="order-list-item" style="margin-bottom: 8px;">
+                            <div class="order-list-item-header">
+                                <span class="order-id">最新 N 笔交易</span>
+                                <span class="order-status">实时</span>
+                            </div>
+                            <div class="order-meta">
+                                按时间倒序展示最近的 HKDT 相关交易，包括铸币、赎回、转账与支付。
+                            </div>
+                        </div>
+                        <div class="order-list-item" style="margin-bottom: 8px;">
+                            <div class="order-list-item-header">
+                                <span class="order-id">前 10 持币地址</span>
+                                <span class="order-status">近似分布</span>
+                            </div>
+                            <div class="order-meta">
+                                基于事件推导当前时间窗口内的持币分布情况，帮助你快速识别大额地址。
+                            </div>
+                        </div>
+                        <div class="order-list-item">
+                            <div class="order-list-item-header">
+                                <span class="order-id">24 小时单笔交易量</span>
+                                <span class="order-status">可视化</span>
+                            </div>
+                            <div class="order-meta">
+                                以时间为横轴、单笔交易量为纵轴，展示过去 24 小时所有 HKDT 交易的变化趋势。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="block">
+                    <div class="block-title">进入仪表盘</div>
+                    <p style="font-size: 12px; color: #9ca3af; margin-bottom: 10px;">
+                        建议在 <span class="highlight">本地 Hardhat 节点已启动且合约已部署</span> 的前提下使用仪表盘，以获得完整的数据视图。
+                    </p>
+                    <button class="button button-primary" onclick="window.location.href='dashboard.html'">
+                        📊 打开 HKDT 交易仪表盘
+                    </button>
+                    <p style="font-size: 11px; color: #6b7280; margin-top: 8px;">
+                        仪表盘地址：<span class="value">/frontend/dashboard.html</span>
+                    </p>
+                </div>
+            </section>
+        </main>
     </div>
 
-    <!-- 引入 ethers.js - 使用多个CDN备用 -->
-    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" 
-            onerror="this.onerror=null; this.src='https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js'"></script>
-    <script>
-        // 等待ethers加载完成
-        function checkEthers() {
-            if (typeof ethers === 'undefined') {
-                console.error('ethers.js 加载失败，尝试备用CDN...');
-                // 如果主CDN失败，尝试备用
-                const script = document.createElement('script');
-                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
-                script.onload = function() {
-                    console.log('ethers.js 从备用CDN加载成功');
-                    // 重新初始化
-                    if (typeof initApp === 'function') {
-                        initApp();
-                    }
-                };
-                script.onerror = function() {
-                    document.body.innerHTML = '<div style="text-align:center;padding:50px;color:red;"><h2>❌ ethers.js 加载失败</h2><p>请检查网络连接或刷新页面</p><p>如果问题持续，请检查浏览器控制台</p></div>';
-                };
-                document.head.appendChild(script);
-                return false;
-            }
-            return true;
-        }
-        
-        // 页面加载完成后检查
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                if (!checkEthers()) {
-                    console.log('等待ethers.js加载...');
-                }
-            }, 100);
-        });
-    </script>
+    <!-- 从本地 node_modules 引入 ethers.js，避免外网 CDN 问题 -->
+    <script src="../node_modules/ethers/dist/ethers.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

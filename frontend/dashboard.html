@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HKDT 交易数据仪表盘</title>
+  <!-- Tailwind-like 自定义简易样式（纯 CSS 实现） -->
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(circle at top left, #1f2937 0, #020617 45%, #020617 100%);
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .title-group h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #f9fafb;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-badge {
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+
+    .title-group p {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .select,
+    .button {
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      background: rgba(15, 23, 42, 0.7);
+      color: #e5e7eb;
+      font-size: 13px;
+      padding: 8px 14px;
+      outline: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      backdrop-filter: blur(12px);
+      transition: all 0.15s ease-out;
+    }
+
+    .select:hover,
+    .button:hover {
+      border-color: #38bdf8;
+      background: rgba(15, 23, 42, 0.9);
+      box-shadow: 0 10px 30px rgba(56, 189, 248, 0.15);
+    }
+
+    .select {
+      padding-right: 32px;
+      position: relative;
+      appearance: none;
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper::after {
+      content: "▾";
+      font-size: 10px;
+      color: #9ca3af;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .button-primary {
+      border-color: #38bdf8;
+      background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: #f9fafb;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(34, 197, 94, 0.35);
+    }
+
+    .button-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 35px rgba(56, 189, 248, 0.4);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 11px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(75, 85, 99, 0.9);
+      color: #9ca3af;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.35);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), rgba(15, 23, 42, 0.95));
+      border-radius: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      padding: 18px 16px 16px;
+      box-shadow: 0 18px 55px rgba(15, 23, 42, 0.85);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.08), transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: #9ca3af;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .card-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f9fafb;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-sub {
+      font-size: 11px;
+      color: #6b7280;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      color: #9ca3af;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 3fr 2.4fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: radial-gradient(circle at top left, rgba(248, 250, 252, 0.08), rgba(15, 23, 42, 0.98));
+      border-radius: 20px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      padding: 18px 16px 14px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.09), transparent 60%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-desc {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 1px;
+    }
+
+    .tag {
+      font-size: 11px;
+      border-radius: 999px;
+      padding: 3px 9px;
+      border: 1px solid rgba(55, 65, 81, 0.85);
+      color: #9ca3af;
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .table-wrapper {
+      margin-top: 6px;
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      max-height: 420px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 1.3fr 1.3fr 0.9fr 0.9fr 0.9fr;
+      gap: 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 10px 14px 8px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      color: #6b7280;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .table-body {
+      max-height: 376px;
+      overflow-y: auto;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 1.3fr 1.3fr 0.9fr 0.9fr 0.9fr;
+      gap: 10px;
+      padding: 9px 14px;
+      font-size: 12px;
+      align-items: center;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.6);
+    }
+
+    .table-row:nth-child(2n) {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .table-row:nth-child(2n + 1) {
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .table-row:last-child {
+      border-bottom: none;
+    }
+
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 11px;
+      color: #9ca3af;
+    }
+
+    .mono-strong {
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+
+    .address-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .amount-positive {
+      color: #4ade80;
+      font-weight: 600;
+    }
+
+    .amount-negative {
+      color: #f97373;
+      font-weight: 600;
+    }
+
+    .chip {
+      font-size: 10px;
+      padding: 3px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.95);
+      color: #9ca3af;
+    }
+
+    .chip-accent {
+      border-color: rgba(56, 189, 248, 0.7);
+      color: #7dd3fc;
+    }
+
+    .holders-list {
+      margin-top: 8px;
+      border-radius: 14px;
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: rgba(15, 23, 42, 0.94);
+      max-height: 420px;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    .holders-header {
+      display: grid;
+      grid-template-columns: 0.5fr 2.4fr 1.4fr 1.2fr;
+      gap: 8px;
+      font-size: 11px;
+      padding: 10px 12px 8px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.9));
+      color: #6b7280;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .holders-body {
+      max-height: 380px;
+      overflow-y: auto;
+    }
+
+    .holder-row {
+      display: grid;
+      grid-template-columns: 0.5fr 2.4fr 1.4fr 1.2fr;
+      gap: 8px;
+      padding: 9px 12px;
+      font-size: 12px;
+      align-items: center;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.6);
+    }
+
+    .holder-row:nth-child(2n) {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .holder-rank {
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, #22c55e, #16a34a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #ecfdf5;
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
+    }
+
+    .holder-rank.secondary {
+      background: radial-gradient(circle at top, #38bdf8, #0284c7);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+    }
+
+    .holder-rank.muted {
+      background: radial-gradient(circle at top, #6b7280, #4b5563);
+      box-shadow: 0 0 0 4px rgba(75, 85, 99, 0.25);
+    }
+
+    .chart-panel {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), rgba(15, 23, 42, 0.98));
+      border-radius: 20px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      padding: 16px 16px 12px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.95);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chart-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 60%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 260px;
+      margin-top: 6px;
+      border-radius: 14px;
+      padding: 10px 8px 6px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.7);
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .status-bar span strong {
+      color: #e5e7eb;
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+    }
+
+    .legend-color {
+      width: 10px;
+      height: 2px;
+      border-radius: 999px;
+    }
+
+    .legend-color.primary {
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+    }
+
+    .legend-color.secondary {
+      background: linear-gradient(90deg, #f97373, #fb923c);
+    }
+
+    .empty,
+    .error,
+    .loading {
+      font-size: 12px;
+      color: #9ca3af;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .error {
+      color: #fecaca;
+    }
+
+    .loading-spinner {
+      width: 13px;
+      height: 13px;
+      border-radius: 999px;
+      border: 2px solid rgba(148, 163, 184, 0.4);
+      border-top-color: #38bdf8;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- 本地引入 ethers.js（通过 node_modules，避免访问外网 CDN） -->
+  <script src="../node_modules/ethers/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <div class="title-group">
+        <h1>
+          📊 HKDT 交易数据仪表盘
+          <span class="title-badge">On-chain Analytics</span>
+        </h1>
+        <p>实时可视化 HKDT 稳定币在链上的交易行为：最新交易、持币地址分布与 24 小时活动情况。</p>
+      </div>
+
+      <div class="controls">
+        <span class="pill">
+          <span class="pill-dot"></span>
+          <span id="connectionStatus">正在检测网络...</span>
+        </span>
+
+        <div class="select-wrapper">
+          <select id="tokenFilter" class="select">
+            <option value="HKDT">HKDT 稳定币</option>
+          </select>
+        </div>
+
+        <div class="select-wrapper">
+          <select id="rangeFilter" class="select">
+            <option value="24h">最近 24 小时</option>
+            <option value="7d">最近 7 天</option>
+            <option value="30d">最近 30 天</option>
+          </select>
+        </div>
+
+        <button id="refreshAllBtn" class="button button-primary">
+          🔄 刷新全部
+        </button>
+      </div>
+    </header>
+
+    <!-- 顶部统计卡片 -->
+    <section class="grid">
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">
+            总交易笔数
+          </div>
+          <span class="card-badge">Transactions</span>
+        </div>
+        <div class="card-value" id="statTotalTx">-</div>
+        <div class="card-sub" id="statTotalTxSub">过去所选时间区间内的总交易次数</div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">
+            总交易量
+          </div>
+          <span class="card-badge">Volume</span>
+        </div>
+        <div class="card-value" id="statTotalVolume">-</div>
+        <div class="card-sub" id="statTotalVolumeSub">折算为 Token 单位（HKDT）</div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">
+            活跃地址数
+          </div>
+          <span class="card-badge">Unique Addresses</span>
+        </div>
+        <div class="card-value" id="statActiveAddresses">-</div>
+        <div class="card-sub" id="statActiveAddressesSub">在时间区间内参与过交易的地址数量</div>
+      </article>
+
+      <article class="card">
+        <div class="card-header">
+          <div class="card-title">
+            Token 覆盖
+          </div>
+          <span class="card-badge">HKDT</span>
+        </div>
+        <div class="card-value" id="statTokenCoverage">-</div>
+        <div class="card-sub" id="statTokenCoverageSub">当前筛选条件下的 Token 覆盖情况</div>
+      </article>
+    </section>
+
+    <!-- 主体布局：左侧交易表 + 右侧持币地址 -->
+    <section class="layout">
+      <!-- 最新交易 -->
+      <section class="panel">
+        <header class="panel-header">
+          <div>
+            <h2 class="panel-title">
+              最新 N 笔交易
+              <span class="tag" id="latestCountTag">N = 50</span>
+            </h2>
+            <p class="panel-desc">
+              展示符合当前筛选条件的最新 HKDT 转账记录。
+            </p>
+          </div>
+          <button id="refreshTxBtn" class="button">
+            🔁 刷新列表
+          </button>
+        </header>
+
+        <div class="table-wrapper">
+          <div class="table-header">
+            <span>From</span>
+            <span>To</span>
+            <span>Token</span>
+            <span>Amount</span>
+            <span>Time</span>
+          </div>
+          <div id="txTableBody" class="table-body">
+            <div class="loading">
+              <span class="loading-spinner"></span>
+              正在加载链上交易数据...
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 前 10 持币地址 -->
+      <section class="panel">
+        <header class="panel-header">
+          <div>
+            <h2 class="panel-title">
+              前 10 Token 持币地址
+            </h2>
+            <p class="panel-desc">
+              基于当前 Token 和时间范围内观测到的地址余额分布（近似统计）。 
+            </p>
+          </div>
+          <button id="refreshHoldersBtn" class="button">
+            👥 刷新榜单
+          </button>
+        </header>
+
+        <div class="holders-list">
+          <div class="holders-header">
+            <span>#</span>
+            <span>Address</span>
+            <span>Balance</span>
+            <span>Share</span>
+          </div>
+          <div id="holdersBody" class="holders-body">
+            <div class="loading">
+              <span class="loading-spinner"></span>
+              正在统计持币分布...
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- 24 小时交易活动图表 -->
+    <section class="chart-panel">
+      <header class="panel-header">
+        <div>
+          <h2 class="panel-title">
+            24 小时单笔交易量
+          </h2>
+          <p class="panel-desc">
+            展示最近 24 小时内每一笔 HKDT 交易的交易量随时间的变化情况。
+          </p>
+        </div>
+        <div class="controls">
+          <span class="legend">
+            <span class="legend-color primary"></span>
+            <span>单笔交易量</span>
+          </span>
+        </div>
+      </header>
+
+      <div class="chart-wrapper">
+        <canvas id="activityChart"></canvas>
+      </div>
+
+      <div class="status-bar">
+        <span>
+          时间范围：<strong id="activityRangeLabel">最近 24 小时</strong>
+        </span>
+        <span>
+          <span class="badge-dot"></span>
+          <span id="activitySummary">等待数据加载...</span>
+        </span>
+      </div>
+    </section>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
+
+
